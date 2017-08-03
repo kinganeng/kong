@@ -58,37 +58,39 @@ describe("Router", function()
       insert_apis {
         {
           name = "api-1",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           methods = { "GET" },
         },
         {
           name = "api-2",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           methods = { "POST", "PUT" },
           uris = { "/post", "/put" },
           strip_uri = false,
         },
         {
           name = "api-3",
-          upstream_url = "http://httpbin.org/status",
-          uris = { "/httpbin" },
+          upstream_url = helpers.mock_upstream_url .. "/status",
+          uris = { [[/mock_upstream]] },
           strip_uri = true,
         },
         {
           name = "api-4",
-          upstream_url = "http://httpbin.org/basic-auth",
+          upstream_url = helpers.mock_upstream_url .. "/basic-auth",
           uris = { "/private" },
           strip_uri = false,
         },
         {
           name = "api-5",
-          upstream_url = "http://httpbin.org/anything",
+          upstream_url = helpers.mock_upstream_url .. "/anything",
           uris = { [[/users/\d+/profile]] },
           strip_uri = true,
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -134,7 +136,7 @@ describe("Router", function()
       it("with strip_uri = true", function()
         local res = assert(client:send {
           method = "GET",
-          path = "/httpbin/201",
+          path = "/mock_upstream/201",
           headers = { ["kong-debug"] = 1 },
         })
 
@@ -180,8 +182,8 @@ describe("Router", function()
       insert_apis {
         {
           name = "api-1",
-          upstream_url = "http://httpbin.org",
-          hosts = { "example.com" },
+          upstream_url = helpers.mock_upstream_url,
+          hosts = { "mock_upstream" },
         },
         {
           name = "api-2",
@@ -190,9 +192,9 @@ describe("Router", function()
         },
       }
 
-      assert(helpers.start_kong {
+      assert(helpers.start_kong({
         nginx_conf = "spec/fixtures/custom_nginx.template",
-      })
+      }))
     end)
 
     teardown(function()
@@ -208,7 +210,7 @@ describe("Router", function()
           hello = "world",
         },
         headers = {
-          ["Host"] = "example.com",
+          ["Host"] = "mock_upstream",
         },
       })
 
@@ -237,7 +239,7 @@ describe("Router", function()
         method = "GET",
         path   = "/get?hello",
         headers = {
-          ["Host"] = "example.com",
+          ["Host"] = "mock_upstream",
         },
       })
 
@@ -253,17 +255,19 @@ describe("Router", function()
       insert_apis {
         {
           name = "api-1",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           uris = "/endel%C3%B8st",
         },
         {
           name = "api-2",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           uris = "/foo/../bar",
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -299,20 +303,22 @@ describe("Router", function()
       insert_apis {
         {
           name         = "api-strip-uri",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           uris         = { "/x/y/z", "/z/y/x" },
           strip_uri    = true,
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
       helpers.stop_kong()
     end)
 
-    describe(" = true", function()
+    describe("= true", function()
       it("strips subsequent calls to an API with different [uris]", function()
         local res_uri_1 = assert(client:send {
           method = "GET",
@@ -382,9 +388,9 @@ describe("Router", function()
         }
       }
 
-      assert(helpers.start_kong {
+      assert(helpers.start_kong({
         nginx_conf = "spec/fixtures/custom_nginx.template",
-      })
+      }))
     end)
 
     teardown(function()
@@ -474,17 +480,19 @@ describe("Router", function()
       insert_apis {
         {
           name = "root-uri",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           uris = "/",
         },
         {
           name = "fixture-api",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
           uris = "/foobar",
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -520,17 +528,19 @@ describe("Router", function()
           name = "root-api",
           methods = { "GET" },
           uris = "/root",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
         },
         {
           name = "fixture-api",
           methods = { "GET" },
           uris = "/root/fixture",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -559,17 +569,19 @@ describe("Router", function()
           name = "root-api",
           hosts = "api.com",
           uris = "/root",
-          upstream_url = "http://httpbin.org",
+          upstream_url = helpers.mock_upstream_url,
         },
         {
           name = "fixture-api",
           hosts = "api.com",
           uris = "/root/fixture",
-          upstream_url = "http://httpbin.org",
+          ustream_url = helpers.mock_upstream_url,
         },
       }
 
-      assert(helpers.start_kong())
+      assert(helpers.start_kong({
+        nginx_conf = "spec/fixtures/custom_nginx.template",
+      }))
     end)
 
     teardown(function()
@@ -658,9 +670,9 @@ describe("Router", function()
         })
       end
 
-      assert(helpers.start_kong {
+      assert(helpers.start_kong({
         nginx_conf = "spec/fixtures/custom_nginx.template",
-      })
+      }))
     end)
 
     teardown(function()
