@@ -396,7 +396,7 @@ http {
             }
         }
 
-        location ~ "^/(request|anything)$" {
+        location ~ "^/(request|anything)" {
             content_by_lua_block {
                 local mu                 = require("spec.fixtures.mock_upstream")
                 local headers            = ngx.req.get_headers()
