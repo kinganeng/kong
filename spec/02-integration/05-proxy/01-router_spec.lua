@@ -575,7 +575,7 @@ describe("Router", function()
           name = "fixture-api",
           hosts = "api.com",
           uris = "/root/fixture",
-          ustream_url = helpers.mock_upstream_url,
+          upstream_url = helpers.mock_upstream_url,
         },
       }
 
